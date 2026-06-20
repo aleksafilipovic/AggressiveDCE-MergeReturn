@@ -1,0 +1,27 @@
+# Build directories
+build/
+cmake-build-debug/
+cmake-build-release/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Pass library
+*.so
+MergeReturnPass.so
+
+# Test artifacts
+before.ll
+after.ll
+test_optimised
+*.o
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
