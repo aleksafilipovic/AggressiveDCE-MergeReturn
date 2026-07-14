@@ -11,6 +11,15 @@
  * The pass tracks the new exit block so callers can query it via
  * getExitBlock().
  *
+ * NOTE: the pass is registered under the name "matf-mergereturn"
+ * (NOT "mergereturn"). LLVM already ships its own built-in pass
+ * called "mergereturn" (UnifyFunctionExitNodesLegacyPass). Reusing
+ * that name causes a registration collision in the legacy pass
+ * manager: `opt -mergereturn` can end up running LLVM's own pass
+ * instead of (or in ambiguous conflict with) this one, which makes
+ * it look like "opt already does this optimization" when in fact
+ * this pass was never actually invoked.
+ *
  * Faculty of Mathematics, University of Belgrade
  * Course: Compiler Construction (Konstrukcija kompilatora)
  */
@@ -67,14 +76,14 @@ struct MergeReturnPass : public FunctionPass {
             if (auto *RI = dyn_cast<ReturnInst>(BB.getTerminator()))
                 Returns.push_back(RI);
 
-        LOG("[mergereturn] function '" << F.getName()
+        LOG("[matf-mergereturn] function '" << F.getName()
             << "': found " << Returns.size() << " ret(s)", 2);
 
         // Nothing to do when there is already at most one return.
         if (Returns.size() <= 1) {
             if (!Returns.empty())
                 ExitBlock = Returns[0]->getParent();
-            LOG("[mergereturn]   -> already unified, skipping", 3);
+            LOG("[matf-mergereturn]   -> already unified, skipping", 3);
             return false;
         }
 
@@ -87,7 +96,7 @@ struct MergeReturnPass : public FunctionPass {
         // last in the IR dump (consistent with how LLVM's own pass works).
         ExitBlock = BasicBlock::Create(Ctx, "unified_exit", &F);
 
-        LOG("[mergereturn]   created exit block: " << ExitBlock->getName(), 3);
+        LOG("[matf-mergereturn]   created exit block: " << ExitBlock->getName(), 3);
 
         // ── 3. Build the PHI node (non-void functions only) ───────────────
 
@@ -98,7 +107,7 @@ struct MergeReturnPass : public FunctionPass {
         if (!RetTy->isVoidTy()) {
             RetPHI = Builder.CreatePHI(RetTy, Returns.size(), "retval");
             Builder.CreateRet(RetPHI);
-            LOG("[mergereturn]   created PHI node for return value", 3);
+            LOG("[matf-mergereturn]   created PHI node for return value", 3);
         } else {
             Builder.CreateRetVoid();
         }
@@ -117,7 +126,7 @@ struct MergeReturnPass : public FunctionPass {
             LocalBuilder.CreateBr(ExitBlock);
             RI->eraseFromParent();
 
-            LOG("[mergereturn]   redirected block '"
+            LOG("[matf-mergereturn]   redirected block '"
                 << OldBB->getName() << "' -> unified_exit", 3);
         }
 
@@ -127,9 +136,9 @@ struct MergeReturnPass : public FunctionPass {
     // Pretty-print analysis result (invoked by opt -analyze).
     void print(raw_ostream &OS, const Module *) const override {
         if (ExitBlock)
-            OS << "[mergereturn] exit block: " << ExitBlock->getName() << "\n";
+            OS << "[matf-mergereturn] exit block: " << ExitBlock->getName() << "\n";
         else
-            OS << "[mergereturn] no exit block (function not yet processed)\n";
+            OS << "[matf-mergereturn] no exit block (function not yet processed)\n";
     }
 };
 
@@ -139,8 +148,10 @@ struct MergeReturnPass : public FunctionPass {
 
 char MergeReturnPass::ID = 0;
 
+// IMPORTANT: registered as "matf-mergereturn", not "mergereturn" — see the
+// collision note in the header comment above.
 static RegisterPass<MergeReturnPass> X(
-    "mergereturn",
-    "Unify function exit nodes (mergereturn)",
+    "matf-mergereturn",
+    "Unify function exit nodes (matf-mergereturn)",
     /*CFGOnly=*/false,
     /*isAnalysis=*/false);
