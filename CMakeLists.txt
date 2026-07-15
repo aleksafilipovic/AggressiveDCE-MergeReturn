@@ -1,5 +1,5 @@
-add_llvm_library( LLVMMergeReturnPass MODULE
-  MergeReturnPass.cpp
+add_llvm_library( OurMergeReturnPass MODULE
+  OurMergeReturnPass.cpp
 
   PLUGIN_TOOL
   opt
