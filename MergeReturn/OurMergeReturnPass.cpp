@@ -70,12 +70,6 @@ struct MergeReturnPass : public FunctionPass {
         return true;
     }
 
-    void print(raw_ostream &OS, const Module *) const override {
-        if (ExitBlock)
-            OS << "[matf-mergereturn] exit block: " << ExitBlock->getName() << "\n";
-        else
-            OS << "[matf-mergereturn] no exit block (function not yet processed)\n";
-    }
 };
 
 } // end anonymous namespace
