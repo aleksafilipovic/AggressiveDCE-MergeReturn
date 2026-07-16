@@ -31,6 +31,11 @@ namespace {
             if (VariablesMap.find(Operand) != VariablesMap.end())
                 Variables[VariablesMap[Operand]] = true;
     }
+     //Funkcija za proveru lokalnosti instrukcije
+    bool isLocalAlloca(Value *ptr) {
+        Value *baseInstr = ptr->stripInBoundsOffsets(); // skida gep instrukciju kod struktura,nizova...
+        return isa<AllocaInst>(baseInstr); // alloca rezerviše na steku, ovo je dovoljno za određivanje lokalnosti
+    }   
     //------
     void EliminateDeadInstructions(Function &F, DominatorTree &DT) {
 
@@ -68,7 +73,15 @@ namespace {
             }
 
             for (auto& entry: LastStore) { 
-                InstructionsToRemove.insert(entry.second);
+                Value *ptr = entry.first;
+                StoreInst *store = entry.second;
+// Dodata provera lokalnosti
+                if (isLocalAlloca(ptr)) {
+                    errs() << "[dse: " << F.getName()
+                           << "]: Removing last store to local stack variable -> "
+                           << *store << "\n";
+                    InstructionsToRemove.insert(store);
+                }
             }
 
             
