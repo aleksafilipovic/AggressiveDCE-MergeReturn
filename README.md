@@ -31,8 +31,8 @@ Iz repo root foldera:
 
 Ili ručno iz `llvm-project/build`:
 ```bash
-./bin/opt -S -enable-new-pm=0 -load ./lib/OurMergeReturnPass.so -matf-mergereturn MergeReturn/Tests/simple.ll
-./bin/opt -S -enable-new-pm=0 -load ./lib/LLVMMyPass.so -my-pass AggresiveDCE/Tests/1.ll
+./bin/opt -S -enable-new-pm=0 -load ./lib/OurMergeReturnPass.so -matf-mergereturn ../llvm/lib/Transforms/MergeReturn/Tests/simple.ll
+./bin/opt -S -enable-new-pm=0 -load ./lib/LLVMMyPass.so -my-pass ../llvm/lib/Transforms/AggresiveDCE/Tests/1.ll
 ```
 
 ---
